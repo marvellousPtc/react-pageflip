@@ -1,14 +1,14 @@
 {
-    "name": "react-pageflip",
-    "version": "2.0.3",
-    "author": "oleg.litovski9@gmail.com",
+    "name": "@marvellousptc/react-pageflip",
+    "version": "2.1.0",
+    "author": "marvellousPtc",
     "license": "MIT",
-    "description": "Simple React.js wrapper for StPageFlip library, for creating realistic and beautiful page turning effect",
+    "description": "Enhanced React.js page flip component based on StPageFlip, with single-page mode and improved touch/swipe support",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Nodlik/react-pageflip.git"
+        "url": "https://github.com/marvellousPtc/react-pageflip.git"
     },
-    "homepage": "https://nodlik.github.io/react-pageflip/",
+    "homepage": "https://github.com/marvellousPtc/react-pageflip",
     "main": "build/index.js",
     "module": "build/index.es.js",
     "files": [
