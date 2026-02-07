@@ -1,6 +1,6 @@
-[![GitHub license](https://img.shields.io/github/license/marvellousPtc/react-pageflip)](https://github.com/marvellousPtc/react-pageflip/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/@marvellousptc/react-pageflip)](https://www.npmjs.com/package/@marvellousptc/react-pageflip)
+[![GitHub license](https://img.shields.io/github/license/marvellousPtc/react-pageflip)](https://github.com/marvellousPtc/react-pageflip/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/react-pageflip-enhanced)](https://www.npmjs.com/package/react-pageflip-enhanced)
 
-# @marvellousptc/react-pageflip
+# react-pageflip-enhanced
 
 Enhanced React.js page flip component based on [StPageFlip](https://github.com/Nodlik/StPageFlip), with **single-page mode** and improved touch/swipe support.
 
@@ -28,13 +28,13 @@ Enhanced React.js page flip component based on [StPageFlip](https://github.com/N
 ### Installation
 
 ```bash
-npm install @marvellousptc/react-pageflip
+npm install react-pageflip-enhanced
 ```
 
 ### Basic Usage
 
 ```jsx
-import HTMLFlipBook from '@marvellousptc/react-pageflip';
+import HTMLFlipBook from 'react-pageflip-enhanced';
 
 function MyBook(props) {
     return (
@@ -51,7 +51,7 @@ function MyBook(props) {
 ### Single Page Mode (for mobile)
 
 ```jsx
-import HTMLFlipBook from '@marvellousptc/react-pageflip';
+import HTMLFlipBook from 'react-pageflip-enhanced';
 
 function MyBook() {
     const isMobile = window.innerWidth <= 768;
