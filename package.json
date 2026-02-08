@@ -1,6 +1,6 @@
 {
     "name": "react-pageflip-enhanced",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "author": "marvellousPtc",
     "license": "MIT",
     "description": "Enhanced React.js page flip component based on StPageFlip, with single-page mode and improved touch/swipe support",
