@@ -84,6 +84,12 @@ export abstract class Render {
     protected timer = 0;
 
     /**
+     * 脏标记：只在页面状态发生变化时才执行 drawFrame()。
+     * 阅读静止状态下跳过 drawFrame()，避免每帧无意义的 DOM 操作。
+     */
+    private dirty = true;
+
+    /**
      * Safari browser definitions for resolving a bug with a css property clip-area
      *
      * https://bugs.webkit.org/show_bug.cgi?id=126207
@@ -112,6 +118,9 @@ export abstract class Render {
     /**
      * Executed when requestAnimationFrame is called. Performs the current animation process and call drawFrame()
      *
+     * 优化：使用 dirty 标记跳过静止状态的 drawFrame()。
+     * 原实现每帧都调用 drawFrame() → 60fps × 全部页面遍历 = 性能浪费。
+     *
      * @param timer
      */
     private render(timer: number): void {
@@ -127,10 +136,16 @@ export abstract class Render {
                 this.animation.onAnimateEnd();
                 this.animation = null;
             }
+
+            this.dirty = true;
         }
 
         this.timer = timer;
-        this.drawFrame();
+
+        if (this.dirty) {
+            this.drawFrame();
+            this.dirty = false;
+        }
     }
 
     /**
@@ -196,6 +211,7 @@ export abstract class Render {
             this.orientation = orientation;
             this.app.updateOrientation(orientation);
         }
+        this.dirty = true;
     }
 
     /**
@@ -289,6 +305,7 @@ export abstract class Render {
             direction,
             progress: progress * 2,
         };
+        this.dirty = true;
     }
 
     /**
@@ -296,6 +313,7 @@ export abstract class Render {
      */
     public clearShadow(): void {
         this.shadow = null;
+        this.dirty = true;
     }
 
     /**
@@ -349,6 +367,7 @@ export abstract class Render {
      */
     public setPageRect(pageRect: RectPoints): void {
         this.pageRect = pageRect;
+        this.dirty = true;
     }
 
     /**
@@ -358,6 +377,7 @@ export abstract class Render {
      */
     public setDirection(direction: FlipDirection): void {
         this.direction = direction;
+        this.dirty = true;
     }
 
     /**
@@ -369,6 +389,7 @@ export abstract class Render {
         if (page !== null) page.setOrientation(PageOrientation.RIGHT);
 
         this.rightPage = page;
+        this.dirty = true;
     }
 
     /**
@@ -379,6 +400,7 @@ export abstract class Render {
         if (page !== null) page.setOrientation(PageOrientation.LEFT);
 
         this.leftPage = page;
+        this.dirty = true;
     }
 
     /**
@@ -392,6 +414,7 @@ export abstract class Render {
             );
 
         this.bottomPage = page;
+        this.dirty = true;
     }
 
     /**
@@ -409,6 +432,7 @@ export abstract class Render {
             );
 
         this.flippingPage = page;
+        this.dirty = true;
     }
 
     /**

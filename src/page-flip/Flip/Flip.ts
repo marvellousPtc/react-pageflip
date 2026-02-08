@@ -340,7 +340,12 @@ export class Flip {
         const frames = [];
         for (const p of points) frames.push(() => this.do(p));
 
-        const duration = this.getAnimationDuration(points.length);
+        // 用像素距离（而非帧数）计算动画时长，因为帧数已被限制为最多 60
+        const pixelDistance = Math.max(
+            Math.abs(start.x - dest.x),
+            Math.abs(start.y - dest.y)
+        );
+        const duration = this.getAnimationDuration(pixelDistance);
 
         this.render.startAnimation(frames, duration, () => {
             // callback function
