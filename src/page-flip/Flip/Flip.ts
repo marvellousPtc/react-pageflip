@@ -178,6 +178,7 @@ export class Flip {
      */
     private do(pagePos: Point): void {
         if (this.calc === null) return; // Flipping process not started
+        if (!this.bottomPage || !this.flippingPage) return; // Pages destroyed during remount
 
         if (this.calc.calc(pagePos)) {
             // Perform calculations for a specific position

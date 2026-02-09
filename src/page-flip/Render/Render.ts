@@ -89,6 +89,9 @@ export abstract class Render {
      */
     private dirty = true;
 
+    /** 停止标记：组件卸载时设为 true，终止 rAF 循环 */
+    private stopped = false;
+
     /**
      * Safari browser definitions for resolving a bug with a css property clip-area
      *
@@ -152,14 +155,24 @@ export abstract class Render {
      * Running requestAnimationFrame, and rendering process
      */
     public start(): void {
+        this.stopped = false;
         this.update();
 
         const loop = (timer: number): void => {
+            if (this.stopped) return; // 组件卸载后停止循环
             this.render(timer);
             requestAnimationFrame(loop);
         };
 
         requestAnimationFrame(loop);
+    }
+
+    /**
+     * Stop the rAF loop. Call this when the component unmounts to prevent
+     * accessing destroyed page references.
+     */
+    public stop(): void {
+        this.stopped = true;
     }
 
     /**
