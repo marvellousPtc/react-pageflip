@@ -86,14 +86,16 @@ export class PageFlip extends EventObject {
 
         this.pages.show(this.setting.startPage);
 
-        // safari fix
-        setTimeout(() => {
-            this.ui.update();
-            this.trigger('init', this, {
-                page: this.setting.startPage,
-                mode: this.render.getOrientation(),
-            });
-        }, 1);
+        // Synchronous init: render.start() already calculates bounds via update().
+        // The old setTimeout(1) "safari fix" pushed ui.update + init event to the
+        // next frame, causing a 1-frame flash where pages are mounted but not
+        // positioned. Modern browsers (including Safari 15+) handle synchronous
+        // offsetWidth/Height reads correctly after React's useEffect.
+        this.ui.update();
+        this.trigger('init', this, {
+            page: this.setting.startPage,
+            mode: this.render.getOrientation(),
+        });
     }
 
     /**
@@ -115,31 +117,33 @@ export class PageFlip extends EventObject {
 
         this.pages.show(this.setting.startPage);
 
-        // safari fix
-        setTimeout(() => {
-            this.ui.update();
-            this.trigger('init', this, {
-                page: this.setting.startPage,
-                mode: this.render.getOrientation(),
-            });
-        }, 1);
+        // Synchronous init — see loadFromImages comment for rationale.
+        this.ui.update();
+        this.trigger('init', this, {
+            page: this.setting.startPage,
+            mode: this.render.getOrientation(),
+        });
     }
 
     /**
      * Update current pages from images
      *
      * @param {string[]} imagesHref - List of paths to images
+     * @param {number} [targetPage] - Optional page index to show after update
      */
-    public updateFromImages(imagesHref: string[]): void {
-        const current = this.pages.getCurrentPageIndex();
+    public updateFromImages(imagesHref: string[], targetPage?: number): void {
+        const page =
+            targetPage !== undefined && targetPage >= 0
+                ? targetPage
+                : this.pages.getCurrentPageIndex();
 
         this.pages.destroy();
         this.pages = new ImagePageCollection(this, this.render, imagesHref);
         this.pages.load();
 
-        this.pages.show(current);
+        this.pages.show(page);
         this.trigger('update', this, {
-            page: current,
+            page,
             mode: this.render.getOrientation(),
         });
     }
@@ -148,9 +152,19 @@ export class PageFlip extends EventObject {
      * Update current pages from HTML
      *
      * @param {(NodeListOf<HTMLElement>|HTMLElement[])} items - List of pages as HTML Element
+     * @param {number} [targetPage] - Optional page index to show after update.
+     *   If omitted, the current page index is preserved.
+     *   This is useful for sliding-window scenarios where the page set shifts
+     *   and the caller needs to navigate to a specific page in the new set.
      */
-    public updateFromHtml(items: NodeListOf<HTMLElement> | HTMLElement[]): void {
-        const current = this.pages.getCurrentPageIndex();
+    public updateFromHtml(
+        items: NodeListOf<HTMLElement> | HTMLElement[],
+        targetPage?: number
+    ): void {
+        const page =
+            targetPage !== undefined && targetPage >= 0
+                ? targetPage
+                : this.pages.getCurrentPageIndex();
 
         this.pages.destroy();
         this.pages = new HTMLPageCollection(this, this.render, this.ui.getDistElement(), items);
@@ -158,9 +172,9 @@ export class PageFlip extends EventObject {
         (this.ui as HTMLUI).updateItems(items);
         this.render.reload();
 
-        this.pages.show(current);
+        this.pages.show(page);
         this.trigger('update', this, {
-            page: current,
+            page,
             mode: this.render.getOrientation(),
         });
     }
