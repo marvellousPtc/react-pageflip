@@ -26,17 +26,12 @@ const HTMLFlipBookForward = React.forwardRef(
         const [pages, setPages] = useState<ReactElement[]>([]);
 
         // ---- Ref-bridge for event handlers ----
-        // Handlers are registered ONCE (during first loadFromHTML) using stable
-        // arrow functions that read from refs. This eliminates stale closures:
-        // even if the parent re-renders with new callback references, the
-        // registered handler always calls the latest function.
         const onFlipRef = useRef(props.onFlip);
         const onChangeOrientationRef = useRef(props.onChangeOrientation);
         const onChangeStateRef = useRef(props.onChangeState);
         const onInitRef = useRef(props.onInit);
         const onUpdateRef = useRef(props.onUpdate);
 
-        // Keep refs in sync — no dependency array means this runs every render
         useEffect(() => {
             onFlipRef.current = props.onFlip;
             onChangeOrientationRef.current = props.onChangeOrientation;
@@ -44,6 +39,36 @@ const HTMLFlipBookForward = React.forwardRef(
             onInitRef.current = props.onInit;
             onUpdateRef.current = props.onUpdate;
         });
+
+        // ---- Patch removeChild on root element ----
+        // PageFlip moves React-managed DOM elements from the root div into its
+        // own internal container (stf__block) via appendChild. When React later
+        // reconciles and tries to remove old children, it calls
+        // rootDiv.removeChild(movedElement) which fails because the element's
+        // parentNode is now stf__block, not rootDiv.
+        //
+        // This patch gracefully handles moved elements: if the child is not a
+        // direct child of rootDiv, remove it from its actual parent instead.
+        const patchedRef = useRef(false);
+        useEffect(() => {
+            const el = htmlElementRef.current;
+            if (!el || patchedRef.current) return;
+            patchedRef.current = true;
+
+            const origRemoveChild = el.removeChild.bind(el);
+            el.removeChild = function <T extends Node>(child: T): T {
+                if ((child as Node).parentNode === el) {
+                    return origRemoveChild(child);
+                }
+                // Element was moved by PageFlip — remove from actual parent
+                try {
+                    (child as Node).parentNode?.removeChild(child);
+                } catch {
+                    // Already removed or detached — safe to ignore
+                }
+                return child;
+            };
+        }, []);
 
         useImperativeHandle(ref, () => ({
             pageFlip: () => pageFlip.current,
@@ -104,7 +129,6 @@ const HTMLFlipBookForward = React.forwardRef(
                 } else {
                     // Subsequent update: pass startPage as target page so the
                     // library navigates to the correct page in the new children set.
-                    // This allows sliding-window updates WITHOUT changing `key`.
                     pageFlip.current.updateFromHtml(childRef.current, props.startPage);
                 }
             }
@@ -128,7 +152,6 @@ const HTMLFlipBookForward = React.forwardRef(
         useEffect(() => {
             return () => {
                 if (pageFlip.current) {
-                    // Stop the rAF loop to prevent accessing destroyed pages
                     try {
                         pageFlip.current.getRender()?.stop();
                     } catch {

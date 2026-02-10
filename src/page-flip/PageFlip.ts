@@ -137,6 +137,7 @@ export class PageFlip extends EventObject {
                 ? targetPage
                 : this.pages.getCurrentPageIndex();
 
+        this.render.finishAnimation();
         this.pages.destroy();
         this.pages = new ImagePageCollection(this, this.render, imagesHref);
         this.pages.load();
@@ -165,6 +166,12 @@ export class PageFlip extends EventObject {
             targetPage !== undefined && targetPage >= 0
                 ? targetPage
                 : this.pages.getCurrentPageIndex();
+
+        // Finish any ongoing flip animation BEFORE destroying the old page
+        // collection. Otherwise the animation's frame callbacks reference
+        // destroyed DOM nodes → "removeChild" / "Cannot read property" errors
+        // when the user flips rapidly during a window shift.
+        this.render.finishAnimation();
 
         this.pages.destroy();
         this.pages = new HTMLPageCollection(this, this.render, this.ui.getDistElement(), items);
